@@ -7,6 +7,9 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.MecanumDrvietrain;
+import edu.wpi.first.wpilibj.XboxController;
+import frc.robot.Constants.OperatorConstants;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -20,6 +23,10 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
+  private MecanumDrvietrain m_drivetrain = new MecanumDrvietrain();
+
+  private XboxController m_stick;
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -29,6 +36,10 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
+    
+    m_stick = new XboxController(OperatorConstants.kDriverControllerPort);
+
+    m_drivetrain.Initialize();
   }
 
   /**
@@ -39,7 +50,10 @@ public class Robot extends TimedRobot {
    * SmartDashboard integrated updating.
    */
   @Override
-  public void robotPeriodic() {}
+  public void robotPeriodic() {
+    m_drivetrain.setVelocityTargets(m_stick.getLeftY(), m_stick.getLeftX(), m_stick.getRightX());
+    m_drivetrain.Manage();
+  }
 
   /**
    * This autonomous (along with the chooser code above) shows how to select between different

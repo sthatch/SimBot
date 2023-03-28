@@ -18,13 +18,13 @@ public class MecanumDrvietrain {
     private WPI_TalonSRX rightRear;
     private WPI_TalonSRX rightRearFollower;
 
-    private double longitudinalVel;
-    private double lateralVel;
-    private double YawVel;
+    private double longOutput;
+    private double latOutput;
+    private double YawOutput;
 
-    private double longitudinalVelTarget;
-    private double lateralVelTarget;
-    private double YawVelTarget;
+    private double longOutputTarget;
+    private double latOutputTarget;
+    private double YawOutputTarget;
 
     /**
      * The initialize method creates the motor object and assigns port values to those objects through the
@@ -56,13 +56,13 @@ public class MecanumDrvietrain {
         rightFront.setInverted(true);
         rightRear.setInverted(true);
 
-        longitudinalVel = 0.0;
-        lateralVel = 0.0;
-        YawVel = 0.0;
+        longOutput = 0.0;
+        latOutput = 0.0;
+        YawOutput = 0.0;
 
-        longitudinalVelTarget = 0.0;
-        lateralVelTarget = 0.0;
-        YawVelTarget = 0.0;
+        longOutputTarget = 0.0;
+        latOutputTarget = 0.0;
+        YawOutputTarget = 0.0;
 
         m_robotDrive = new MecanumDrive(leftFront, leftRear, rightFront, rightRear);
     }
@@ -73,11 +73,11 @@ public class MecanumDrvietrain {
      * <p> IMPORTANT: The setVelocityTargets function needs to be called periodically before this Manage function is called.
      */
     public void Manage(){
-        longitudinalVel = calculateVelocity(longitudinalVel, longitudinalVelTarget);    
-        lateralVel = calculateVelocity(lateralVel, lateralVelTarget);
-        YawVel = YawVelTarget;
+        longOutput = calculateMotorOutput(longOutput, longOutputTarget);    
+        latOutput = calculateMotorOutput(latOutput, latOutputTarget);
+        YawOutput = YawOutputTarget;
         
-        m_robotDrive.driveCartesian(-longitudinalVel, -lateralVel, YawVel);
+        m_robotDrive.driveCartesian(-longOutput, -latOutput, YawOutput);
     }
 
     /**
@@ -86,15 +86,15 @@ public class MecanumDrvietrain {
    * <p>Angles are measured counterclockwise from the positive X axis. The robot's speed is
    * independent of its angle or rotation rate.
    *
-   * @param LongitudinalVelocity The robot's speed in the longitudinal direction [-1.0..1.0]. Forward is positive.
-   * @param LateralVelocity The robot's speed in the lateral direction [-1.0..1.0]. Left is positive.
-   * @param YawVelocity The robot's rotation (yaw) rate around the Z axis [-1.0..1.0]. Counterclockwise is
+   * @param LongitudinalOutput The robot's % output in the longitudinal direction [-1.0..1.0]. Forward is positive.
+   * @param LateralOutput The robot's % output in the lateral direction [-1.0..1.0]. Left is positive.
+   * @param YawOutput The robot's rotation (yaw) rate around the Z axis [-1.0..1.0]. Counterclockwise is
    *     positive.
    */
-    public void setVelocityTargets(double LongitudinalVelocity, double LateralVelocity, double YawVelocity){
-        longitudinalVelTarget = LongitudinalVelocity;
-        lateralVelTarget = LateralVelocity;
-        YawVelTarget = YawVelocity;
+    public void setVelocityTargets(double LongitudinalOutput, double LateralOutput, double YawOutput){
+        longOutputTarget = LongitudinalOutput;
+        latOutputTarget = LateralOutput;
+        YawOutputTarget = YawOutput;
     }
 
     /**
@@ -103,33 +103,42 @@ public class MecanumDrvietrain {
     * <p>This function calulates the next velocity in reference to the current velocity, a target velocity and
     * a calibratable maximum acceleration.
     *
-    * @param velocity The current velocity
+    * @param output The current velocity
     * @param target The target velocity
     * @param result The returned next velocity value
     */
-    private double calculateVelocity(double velocity, double target){
-        double result = target;
-    
-        if(velocity != target){
-          if(velocity < target){
-            //Robot is accelerating
-            result = velocity + Drivetrain.kMaxAcceleration;
-    
-            //Prevent the new acceleration from exceeding the targt acceleration
-            if(result > target){
-              result = target;
-            }
-          }else{
-            //Robot is decelerating
-            result = velocity - Drivetrain.kMaxAcceleration;
-    
-            //Prevent the new deceleration from exceeding the targt deceleration
-            if(result < target){
-              result = target;
-            }
-          }  
-        }
-        
-        return result;
+    private double calculateMotorOutput(double output, double target){
+      double result = target;
+      double offset = 0.0;
+  
+      if(output != target){
+        /*
+        * Calulate the output step
+        *
+        * MaxOutput will always be 1
+        * (MaxOutput / KtTimeToMaxOutput) * (kDefaultPeriod / 1 RTOS Cycle)
+        */
+        offset = Robot.kDefaultPeriod / Drivetrain.KtTimeToMaxOutput;
+  
+        if(output < target){
+          //Robot is accelerating
+          result = output + offset;
+  
+          //Prevent the new acceleration from exceeding the targt acceleration
+          if(result > target){
+            result = target;
+          }
+        }else{
+          //Robot is decelerating
+          result = output - offset;
+  
+          //Prevent the new deceleration from exceeding the targt deceleration
+          if(result < target){
+            result = target;
+          }
+        }  
+      }
+      
+      return result;
       }
 }

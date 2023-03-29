@@ -103,9 +103,9 @@ public class MecanumDrvietrain {
     * <p>This function calulates the next velocity in reference to the current velocity, a target velocity and
     * a calibratable maximum acceleration.
     *
-    * @param output The current velocity
-    * @param target The target velocity
-    * @param result The returned next velocity value
+    * @param output The previous output
+    * @param target The target output
+    * @param result The returned next output value
     */
     private double calculateMotorOutput(double output, double target){
       double result = target;

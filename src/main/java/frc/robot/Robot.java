@@ -50,8 +50,6 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    m_drivetrain.setVelocityTargets(m_stick.getLeftY(), m_stick.getLeftX(), m_stick.getRightX());
-    m_drivetrain.Manage();
   }
 
   /**
@@ -91,7 +89,10 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {    
+    m_drivetrain.setVelocityTargets(m_stick.getLeftY(), m_stick.getLeftX(), m_stick.getRightX());
+    m_drivetrain.Manage();
+  }
 
   /** This function is called once when the robot is disabled. */
   @Override
